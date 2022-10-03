@@ -28,8 +28,12 @@ public class dunGen : MonoBehaviour
         {
             for (int y = 0; y < size.y; y++)
             {
-                var newRoom = Instantiate(room, new Vector3(i * offset.x, 0, -y * offset.y) , Quaternion.identity, transform).GetComponent<RoomGen>();
-                newRoom.updateRoom(board[Mathf.FloorToInt(i+y*size.x)].status);
+                Cell currentCell = board[Mathf.FloorToInt(i + y * size.x)];
+                if (currentCell.visited)
+                {
+                    var newRoom = Instantiate(room, new Vector3(i * offset.x, 0, -y * offset.y), Quaternion.identity, transform).GetComponent<RoomGen>();
+                    newRoom.updateRoom(currentCell.status);
+                }
             }
         }
     }
@@ -54,6 +58,11 @@ public class dunGen : MonoBehaviour
 
         while (k < 1000)
         {
+            if (currentCell == board.Count - 1)
+            {
+                break;
+            }
+
             k++;
             board[currentCell].visited = true;
             List<int> neighbors = DFScheck(currentCell);
@@ -124,7 +133,7 @@ public class dunGen : MonoBehaviour
         {
             neighbors.Add(Mathf.FloorToInt(cell + 1));
         }
-        if ((cell + 1) % size.x != 0 && !board[Mathf.FloorToInt(cell - 1)].visited)
+        if (cell % size.x != 0 && !board[Mathf.FloorToInt(cell - 1)].visited)
         {
             neighbors.Add(Mathf.FloorToInt(cell - 1));
         }
