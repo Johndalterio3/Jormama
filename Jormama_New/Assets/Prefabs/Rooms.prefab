@@ -425,7 +425,7 @@ Transform:
   - {fileID: 6316565516826765495}
   - {fileID: 4905711365915513100}
   m_Father: {fileID: 1012220945977135731}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7335090277196971377
 GameObject:
@@ -436,6 +436,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1012220945977135731}
+  - component: {fileID: 5813085762625581325}
   m_Layer: 0
   m_Name: Rooms
   m_TagString: Untagged
@@ -455,11 +456,33 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 587920653796229892}
   - {fileID: 3492855026710245038}
+  - {fileID: 587920653796229892}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5813085762625581325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7335090277196971377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce21b4aa01b81ff47818c5755dbf7ee3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walls:
+  - {fileID: 4418202168230339779}
+  - {fileID: 1298601247626251530}
+  - {fileID: 1700655248808356662}
+  - {fileID: 236974478747698201}
+  doors:
+  - {fileID: 8272051277053016658}
+  - {fileID: 9200962424214383256}
+  - {fileID: 8309023749352446475}
+  - {fileID: 8350342965528188738}
 --- !u!1 &8018012523673381498
 GameObject:
   m_ObjectHideFlags: 0
@@ -492,7 +515,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1012220945977135731}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5591296270416840998
 MeshFilter:

@@ -4,68 +4,130 @@ using UnityEngine;
 
 public class dunGen : MonoBehaviour
 {
-
     public class Cell
     {
-        public bool visited = false; //to do change to 5 bit binary number
+        public bool visited = false;
         public bool[] status = new bool[4];
     }
 
-    public Vector2 size;
-    public int startPos = 0;
-    List<Cell> board;
-    public GameObject room;
-    public Vector2 offset;
-
-    private void Start()
+    [System.Serializable]
+    public class Rule
     {
-        mazeGen();
+        public GameObject room;
+        public Vector2Int minPosition;
+        public Vector2Int maxPosition;
+
+        public bool obligatory;
+
+        public int ProbabilityOfSpawning(int x, int y)
+        {
+            // 0 - cannot spawn 1 - can spawn 2 - HAS to spawn
+
+            if (x >= minPosition.x && x <= maxPosition.x && y >= minPosition.y && y <= maxPosition.y)
+            {
+                return obligatory ? 2 : 1;
+            }
+
+            return 0;
+        }
+
     }
 
-    void genDun()
+    public Vector2Int size;
+    public int startPos = 0;
+    public Rule[] rooms;
+    public Vector2 offset;
+
+    List<Cell> board;
+
+    // Start is called before the first frame update
+    void Start()
     {
+        MazeGenerator();
+    }
+
+    void GenerateDungeon()
+    {
+
         for (int i = 0; i < size.x; i++)
         {
-            for (int y = 0; y < size.y; y++)
+            for (int j = 0; j < size.y; j++)
             {
-                Cell currentCell = board[Mathf.FloorToInt(i + y * size.x)];
+                Cell currentCell = board[(i + j * size.x)];
                 if (currentCell.visited)
                 {
-                    var newRoom = Instantiate(room, new Vector3(i * offset.x, 0, -y * offset.y), Quaternion.identity, transform).GetComponent<RoomGen>();
-                    newRoom.updateRoom(currentCell.status);
+                    int randomRoom = -1;
+                    List<int> availableRooms = new List<int>();
+
+                    for (int k = 0; k < rooms.Length; k++)
+                    {
+                        int p = rooms[k].ProbabilityOfSpawning(i, j);
+
+                        if (p == 2)
+                        {
+                            randomRoom = k;
+                            break;
+                        }
+                        else if (p == 1)
+                        {
+                            availableRooms.Add(k);
+                        }
+                    }
+
+                    if (randomRoom == -1)
+                    {
+                        if (availableRooms.Count > 0)
+                        {
+                            randomRoom = availableRooms[Random.Range(0, availableRooms.Count)];
+                        }
+                        else
+                        {
+                            randomRoom = 0;
+                        }
+                    }
+
+
+                    var newRoom = Instantiate(rooms[randomRoom].room, new Vector3(i * offset.x, 0, -j * offset.y), Quaternion.identity, transform).GetComponent<RoomBehaviour>();
+                    newRoom.UpdateRoom(currentCell.status);
+                    newRoom.name += " " + i + "-" + j;
+
                 }
             }
         }
+
     }
 
-
-
-    void mazeGen()
+    void MazeGenerator()
     {
         board = new List<Cell>();
 
         for (int i = 0; i < size.x; i++)
         {
-            for (int y = 0; y < size.y; y++)
+            for (int j = 0; j < size.y; j++)
             {
                 board.Add(new Cell());
             }
         }
 
         int currentCell = startPos;
+
         Stack<int> path = new Stack<int>();
+
         int k = 0;
 
         while (k < 1000)
         {
+            k++;
+
+            board[currentCell].visited = true;
+
             if (currentCell == board.Count - 1)
             {
                 break;
             }
 
-            k++;
-            board[currentCell].visited = true;
-            List<int> neighbors = DFScheck(currentCell);
+            //Check the cell's neighbors
+            List<int> neighbors = CheckNeighbors(currentCell);
 
             if (neighbors.Count == 0)
             {
@@ -81,61 +143,74 @@ public class dunGen : MonoBehaviour
             else
             {
                 path.Push(currentCell);
+
                 int newCell = neighbors[Random.Range(0, neighbors.Count)];
 
-                if (newCell == currentCell)//down or right
+                if (newCell > currentCell)
                 {
-                    if (newCell-1 == currentCell)//right
+                    //down or right
+                    if (newCell - 1 == currentCell)
                     {
                         board[currentCell].status[2] = true;
                         currentCell = newCell;
                         board[currentCell].status[3] = true;
                     }
-                    else //down
+                    else
                     {
                         board[currentCell].status[1] = true;
                         currentCell = newCell;
                         board[currentCell].status[0] = true;
                     }
                 }
-                else //up or left
+                else
                 {
-                    if (newCell + 1 == currentCell)//left
+                    //up or left
+                    if (newCell + 1 == currentCell)
                     {
                         board[currentCell].status[3] = true;
                         currentCell = newCell;
                         board[currentCell].status[2] = true;
                     }
-                    else //up
+                    else
                     {
                         board[currentCell].status[0] = true;
                         currentCell = newCell;
                         board[currentCell].status[1] = true;
                     }
                 }
+
             }
+
         }
-        genDun();
+        GenerateDungeon();
     }
 
-    List<int> DFScheck(int cell)
+    List<int> CheckNeighbors(int cell)
     {
         List<int> neighbors = new List<int>();
-        if (cell - size.x >= 0 && !board[Mathf.FloorToInt(cell-size.x)].visited)
+
+        //check up neighbor
+        if (cell - size.x >= 0 && !board[(cell - size.x)].visited)
         {
-            neighbors.Add(Mathf.FloorToInt(cell - size.x));
+            neighbors.Add((cell - size.x));
         }
-        if (cell + size.x < board.Count && !board[Mathf.FloorToInt(cell + size.x)].visited)
+
+        //check down neighbor
+        if (cell + size.x < board.Count && !board[(cell + size.x)].visited)
         {
-            neighbors.Add(Mathf.FloorToInt(cell + size.x));
+            neighbors.Add((cell + size.x));
         }
-        if ((cell+1) % size.x != 0 && !board[Mathf.FloorToInt(cell + 1)].visited)
+
+        //check right neighbor
+        if ((cell + 1) % size.x != 0 && !board[(cell + 1)].visited)
         {
-            neighbors.Add(Mathf.FloorToInt(cell + 1));
+            neighbors.Add((cell + 1));
         }
-        if (cell % size.x != 0 && !board[Mathf.FloorToInt(cell - 1)].visited)
+
+        //check left neighbor
+        if (cell % size.x != 0 && !board[(cell - 1)].visited)
         {
-            neighbors.Add(Mathf.FloorToInt(cell - 1));
+            neighbors.Add((cell - 1));
         }
 
         return neighbors;
