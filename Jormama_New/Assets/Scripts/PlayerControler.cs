@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerControler : MonoBehaviour
 {
@@ -8,7 +9,25 @@ public class PlayerControler : MonoBehaviour
     [SerializeField] private Transform _model;
     [SerializeField] private float speed = 5;
     [SerializeField] private float turnSpeed = 700;
+    [SerializeField] private PlayerInputActions playerControls;
     private Vector3 input;
+    private InputAction move;
+
+    private void Awake()
+    {
+        playerControls = new PlayerInputActions();
+    }
+
+    private void OnEnable()
+    {
+        move = playerControls.Player.Move;
+        move.Enable();
+    }
+
+    private void OnDisable()
+    {
+        move.Disable();
+    }
 
     private void Update()
     {
@@ -23,7 +42,7 @@ public class PlayerControler : MonoBehaviour
 
     private void GatherInput()
     {
-        input = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        input = new Vector3(move.ReadValue<Vector2>().x, 0, move.ReadValue<Vector2>().y);
     }
 
     
